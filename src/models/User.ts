@@ -7,7 +7,7 @@ export interface IUser extends Document {
   password: string;
   role: 'defense' | 'attack';
   organization: Types.ObjectId;
-  region?: 'North' | 'South' | 'Center' | 'West Bank';
+  region?: RegionsEnum;
   interceptedMissiles: Types.ObjectId[];
   resources: { name: string; amount: number }[];
 

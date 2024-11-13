@@ -1,18 +1,24 @@
-import { Schema, Types, Document, model } from "mongoose";
+import { Schema, Document, model, Types } from "mongoose";
 import { Status } from "../types/enums/attackStatusEnum"
 
 // Define the Missile Attack interface
 export interface IMissileAttack extends Document {
-  targetOrganization: Types.ObjectId;
-  missileType: Types.ObjectId;
+  user: Types.ObjectId;
+  missileType: string;
+  target: string;
+  launchTime: Date;
+  timeToHit: number; // in seconds
   status: Status;
 }
 
 // Define the Missile Attack schema
 const missileAttackSchema = new Schema<IMissileAttack>({
-  targetOrganization: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
-  missileType: { type: Schema.Types.ObjectId, ref: 'Missile', required: true },
-  status: { type: String, Status, required: true }
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  missileType: { type: String, required: true },
+  target: { type: String, required: true },
+  launchTime: { type: Date, required: true, default: Date.now },
+  timeToHit: { type: Number, required: true },
+  status: { type: String, Status, required: true, default: Status.Launched }
 });
 
 // Export the Missile Attack model
