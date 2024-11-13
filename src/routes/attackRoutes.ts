@@ -5,7 +5,6 @@ import { verifyRole } from "../middlewares/verifyRole";
 
 const router = express.Router();
 
-
-router.post("/launch", verifyUser, (verifyRole('attack')) as any, launchAttack);
+router.post("/launch", verifyUser, verifyRole('attack') as any, launchAttack);
 
 export default router;
