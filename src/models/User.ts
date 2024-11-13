@@ -9,6 +9,8 @@ export interface IUser extends Document {
   organization: Types.ObjectId;
   region?: 'North' | 'South' | 'Center' | 'West Bank';
   interceptedMissiles: Types.ObjectId[];
+  resources: { name: string; amount: number }[];
+
 }
 
 // Define the User schema
@@ -18,7 +20,13 @@ const userSchema = new Schema<IUser>({
   role: { type: String, enum: ['defense', 'attack'], required: true },
   organization: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   region: { type: String, RegionsEnum, required: function() { return this.role === 'defense'; } },
-  interceptedMissiles: [{ type: Schema.Types.ObjectId, ref: 'Missile' }]
+  interceptedMissiles: [{ type: Schema.Types.ObjectId, ref: 'Missile' }],
+  resources: [
+    {
+      name: { type: String, required: true },
+      amount: { type: Number, required: true }
+    }
+  ]
 });
 
 // Export the User model
