@@ -3,6 +3,8 @@ import "dotenv/config";
 import cors from "cors";
 import http from "http";
 import authRouter from "./routes/authRoutes";
+import attackRouter from "./routes/attackRoutes";
+
 import { Server } from "socket.io";
 import { handleSocketConnection } from "./sockets/io";
 import { connectToMongo, runInitialSetup } from "./config/db";
@@ -29,6 +31,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api/auth",authRouter)
+app.use("/api/attack", attackRouter);
 httpServer.listen(PORT, () => {
   console.log(`Server started, Visit "http://localhost:${PORT}"`);
 });
