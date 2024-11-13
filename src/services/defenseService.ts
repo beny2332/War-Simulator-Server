@@ -1,5 +1,12 @@
 import User from '../models/User';
+import { RegionsEnum } from '../types/enums/regionEnum'
 import { getUserAmmunition as getUserAmmunitionUtil } from '../utils/ammunitionUtils';
+import MissileAttack from '../models/MissleAttack';
+
+export const getAttacksForRegion = async (region: RegionsEnum): Promise<any> => {
+    const attacks = await MissileAttack.find({ target: region });
+    return attacks;
+}
 
 export const interceptMissile = async (userId: string, missileId: string): Promise<void> => {
   const user = await User.findById(userId);
