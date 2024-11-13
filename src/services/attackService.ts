@@ -2,6 +2,8 @@ import User from '../models/User';
 import MissileAttack from '../models/MissleAttack';
 import { getUserAmmunition as getUserAmmunitionUtil } from '../utils/ammunitionUtils';
 import Missile from '../models/Missile'
+import { io } from '../app'
+import { Status } from '../types/enums/attackStatusEnum'
 
 export const launchAttack = async (userId: string, target: string, missileType: string): Promise<void> => {
   const user = await User.findById(userId);
@@ -35,7 +37,20 @@ export const launchAttack = async (userId: string, target: string, missileType: 
 
   await missileAttack.save();
 
+  io.emit("attackLaunched", missileAttack )
+
   console.log(`User ${userId} launched a ${missileType} missile at ${target}`);
+
+  setTimeout(async () => {
+    const attack = await MissileAttack.findById(missileAttack._id);
+    if (attack && attack.status === Status.Launched) {
+      attack.status = Status.Hit;
+      await attack.save();
+      io.emit('attacHit', attack);
+      console.log(`Missile attack ${missileAttack._id} hit the target`);
+    }
+  }, timeToHit * 60 * 1000); // Convert minutes to milliseconds
+
 };
 
 export const getUserAmmunition = async (userId: string): Promise<any> => {

@@ -3,6 +3,7 @@ import { RegionsEnum } from '../types/enums/regionEnum'
 import { getUserAmmunition as getUserAmmunitionUtil } from '../utils/ammunitionUtils';
 import MissileAttack from '../models/MissleAttack';
 import { Status } from '../types/enums/attackStatusEnum'
+import { io } from '../app'
 
 export const getAttacksForRegion = async (region: RegionsEnum): Promise<any> => {
     const attacks = await MissileAttack.find({ target: region });
@@ -30,8 +31,8 @@ export const interceptMissile = async (userId: string, missileType: string, atta
   resource.amount -= 1;
   await user.save();
 
-  // Implement the logic to intercept a missile
-  // For example, you can update the missile status in the database
+  io.emit('missileIntercepted', attack)
+
   console.log(`User ${userId} intercepted missile ${missileType}`);
 };
 
