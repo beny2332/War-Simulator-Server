@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import Organization from '../models/Organization';
+import { RegionsEnum } from '../types/enums/regionEnum'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
@@ -18,7 +19,7 @@ export const registerUser = async (username: string, password: string, role: 'de
     password: hashedPassword,
     role,
     organization: organization._id,
-    region: role === 'defense' ? region : undefined,
+    region: role === 'defense' ? region : RegionsEnum,
     interceptedMissiles: []
   });
 

@@ -1,4 +1,5 @@
 import { Schema, Types, Document, model } from "mongoose";
+import { RegionsEnum } from "../types/enums/regionEnum"
 
 // Define the User interface
 export interface IUser extends Document {
@@ -16,7 +17,7 @@ const userSchema = new Schema<IUser>({
   password: { type: String, required: true },
   role: { type: String, enum: ['defense', 'attack'], required: true },
   organization: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
-  region: { type: String, enum: ['North', 'South', 'Center', 'West Bank'], required: function() { return this.role === 'defense'; } },
+  region: { type: String, RegionsEnum, required: function() { return this.role === 'defense'; } },
   interceptedMissiles: [{ type: Schema.Types.ObjectId, ref: 'Missile' }]
 });
 
