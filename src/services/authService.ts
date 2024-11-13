@@ -24,7 +24,7 @@ export const registerUser = async (username: string, password: string, role: 'de
 
   await newUser.save();
 
-  const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ userId: newUser._id, role: newUser.role }, JWT_SECRET, { expiresIn: '1h' });
 
   return token;
 };
@@ -40,7 +40,7 @@ export const loginUser = async (username: string, password: string) => {
     throw new Error('Invalid credentials');
   }
 
-  const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
 
   return token;
 };
