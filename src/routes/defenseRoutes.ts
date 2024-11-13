@@ -8,6 +8,6 @@ const router = express.Router();
 
 router.post("/intercept", verifyUser, verifyRole('defense') as any, interceptMissile);
 router.get("/ammunition", verifyUser, verifyRole('defense') as any, getUserAmmunition);
-router.get("/attackes", verifyUser, verifyRole('defense') as any, getUserAttacks);
+router.get("/attacks", verifyUser, verifyRole('defense') as any, getUserAttacks);
 
 export default router;
