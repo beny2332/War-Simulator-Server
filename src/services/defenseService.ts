@@ -40,3 +40,13 @@ export const getUserAmmunition = async (userId: string): Promise<any> => {
     return await getUserAmmunitionUtil(userId);
   };
 
+  export const validateInterception = async (attackId: string, missileType: string) => {
+    // Logic to validate if interception is possible
+    return true;
+  };
+  
+  export const processInterception = async (attackId: string, missileType: string) => {
+    // Logic to process the interception attempt
+    return { success: true, attackId };
+  };
+  

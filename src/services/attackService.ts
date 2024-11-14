@@ -4,59 +4,80 @@ import { getUserAmmunition as getUserAmmunitionUtil } from '../utils/ammunitionU
 import Missile from '../models/Missile'
 import { io } from '../app'
 import { Status } from '../types/enums/attackStatusEnum'
+import missiles from '../data/missiles.json';
 
-export const launchAttack = async (userId: string, target: string, missileType: string): Promise<void> => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new Error('User not found');
-  }
+interface AttackData {
+  userId: string;
+  target: string;
+  missileType: string;
+}
+
+export const canIntercept = (defenderMissileType: string, attackerMissileType: string): boolean => {
+  const missile = missiles.find(m => m.name === defenderMissileType);
+  return missile?.intercepts.includes(attackerMissileType) || false;
+};
+
+export const launchAttack = async ({ userId, target, missileType }: AttackData): Promise<void> => {
+  const [user, missile] = await Promise.all([
+    User.findById(userId),
+    Missile.findOne({ name: missileType })
+  ]);
+
+  if (!user) throw new Error('User not found');
+  if (!missile) throw new Error('Missile not found');
 
   const resource = user.resources.find(r => r.name === missileType);
-  if (!resource || resource.amount <= 0) {
-    throw new Error('Insufficient resources');
-  }
-
-  resource.amount -= 1;
-  await user.save();
-
-  const missile = await Missile.findOne({ name: missileType });
-  if (!missile) {
-    throw new Error('Missile not found');
-  }
-
-  const timeToHit = missile.speed;
+  if (!resource || resource.amount <= 0) throw new Error('Insufficient resources');
 
   const missileAttack = new MissileAttack({
     user: user._id,
     missileType,
     target,
     launchTime: new Date(),
-    timeToHit,
-    status: 'launched'
+    timeToHit: missile.speed,
+    status: Status.Launched
   });
 
-  await missileAttack.save();
+  await Promise.all([
+    missileAttack.save(),
+    User.updateOne(
+      { _id: userId, 'resources.name': missileType },
+      { $inc: { 'resources.$.amount': -1 } }
+    )
+  ]);
 
-  io.emit("attackLaunched", missileAttack )
-
-  console.log(`User ${userId} launched a ${missileType} missile at ${target}`);
+  io.emit("attackLaunched", {
+    ...missileAttack.toObject(),
+    timeLeft: missile.speed * 60 // Time in seconds
+  });
 
   setTimeout(async () => {
-    const attack = await MissileAttack.findById(missileAttack._id);
-    if (attack && attack.status === Status.Launched) {
-      attack.status = Status.Hit;
-      await attack.save();
-      io.emit('attacHit', attack);
-      console.log(`Missile attack ${missileAttack._id} hit the target`);
+    const attack = await MissileAttack.findOneAndUpdate(
+      { _id: missileAttack._id, status: Status.Launched },
+      { $set: { status: Status.Hit } },
+      { new: true }
+    );
+    
+    if (attack) {
+      io.emit('attackHit', attack);
     }
-  }, timeToHit * 60 * 1000); // Convert minutes to milliseconds
-
+  }, missile.speed * 60 * 1000);
 };
 
-export const getUserAmmunition = async (userId: string): Promise<any> => {
-  return await getUserAmmunitionUtil(userId);
+// Combined user-related queries
+export const getUserData = async (userId: string) => {
+  const [ammunition, attacks] = await Promise.all([
+    getUserAmmunitionUtil(userId),
+    MissileAttack.find({ user: userId })
+  ]);
+  
+  return { ammunition, attacks };
 };
 
-export const getUserAttacks = async (userId: string): Promise<any> => {
-  return await MissileAttack.find({ user: userId });
+// Combined attack-related calculations
+export const getAttackMetrics = (missileType: string) => {
+  return {
+    interceptionWindow: 30, // Example: 30 seconds window
+    // Add other attack-related calculations here
+  };
 };

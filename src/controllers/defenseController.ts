@@ -1,35 +1,19 @@
-import { NextFunction, Request, Response } from "express";
-import { interceptMissile as interceptMissileService,  getAttacksForRegion as getAttacksForRegionService, getUserAmmunition as getUserAmmunitionService} from "../services/defenseService";
+import { Request, Response } from 'express';
+import { validateInterception, processInterception } from '../services/defenseService';
+import { io } from '../app';
 
-export const interceptMissile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const interceptAttack = async (req: Request, res: Response) => {
+  const { attackId, missileType } = req.body;
   try {
-    const userId = (req as any).user.userId;
-    const { missileType, attackId } = req.body;
-
-    await interceptMissileService(userId, missileType, attackId);
-
-    res.status(200).send("Missile intercepted successfully");
+    const canIntercept = await validateInterception(attackId, missileType);
+    if (canIntercept) {
+      const result = await processInterception(attackId, missileType);
+      io.emit('interceptResult', result);
+      res.json(result);
+    } else {
+      res.status(400).json({ error: 'Invalid interception attempt' });
+    }
   } catch (error) {
-    next(error);
+    res.status(400).json({ error: 'Interception failed' });
   }
 };
-
-export const getUserAmmunition = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = (req as any).user.userId;
-      const ammunition = await getUserAmmunitionService(userId);
-      res.status(200).json(ammunition);
-    } catch (error) {
-      next(error);
-    }
-  };
-
-export const getAttacksForRegion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-        const region = (req as any).user.region
-        const attacks = await getAttacksForRegionService(region)
-        res.status(200).json(attacks)
-    } catch (error) {
-      next(error);
-    }
-  };

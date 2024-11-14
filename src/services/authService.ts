@@ -17,7 +17,8 @@ export const registerUser = async (username: string, password: string, role: 'de
     username,
     password: hashedPassword,
     role,
-    organization: org._id, // Store the organization ID
+    resources: org.resources,
+    organization: org._id, 
     region: role === 'defense' ? region : undefined, // Only store region for defense role
     attacks: role === 'attack' ? [] : undefined, // Initialize the attacks array only for attackers
   });
