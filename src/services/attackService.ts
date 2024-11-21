@@ -17,7 +17,7 @@ export const canIntercept = (defenderMissileType: string, attackerMissileType: s
   return missile?.intercepts.includes(attackerMissileType) || false;
 };
 
-export const launchAttack = async ({ userId, target, missileType }: AttackData): Promise<void> => {
+export const launchAttack = async ({ userId, target, missileType }: AttackData): Promise<any> => {
   const [user, missile] = await Promise.all([
     User.findById(userId),
     Missile.findOne({ name: missileType })
@@ -62,6 +62,7 @@ export const launchAttack = async ({ userId, target, missileType }: AttackData):
       io.emit('attackHit', attack);
     }
   }, missile.speed * 60 * 1000);
+  return missileAttack
 };
 
 // Combined user-related queries
